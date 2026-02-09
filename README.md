@@ -5,7 +5,7 @@ CLI tool for Jenkins. List jobs, check builds, view logs, trigger builds.
 ## Install
 
 ```bash
-pip install zenkins
+uv tool install zenkins
 ```
 
 ## Setup
