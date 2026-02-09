@@ -10,7 +10,7 @@ uv tool install zenkins
 
 ## Setup
 
-Run `zenkins init` to configure your Jenkins connection. This creates `~/.config/jenkins/config` with your Jenkins URL and credentials.
+Run `zenkins init` to configure your Jenkins connection. This creates `~/.config/zenkins/config` with your Jenkins URL and credentials.
 
 ## Usage
 

@@ -4,11 +4,12 @@ import sys
 from functools import lru_cache
 from pathlib import Path
 
+import platformdirs
 import requests
 
 from zenkins.types import Credentials
 
-CONFIG_FILE = Path.home() / ".config" / "jenkins" / "config"
+CONFIG_FILE = Path(platformdirs.user_config_dir("zenkins")) / "config"
 
 
 def load_credentials() -> Credentials:
