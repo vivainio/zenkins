@@ -43,7 +43,8 @@ def artifacts_command(args: argparse.Namespace) -> None:
     for a in artifacts:
         rel = a["relativePath"]
         url = f"{base}{job_path(job)}/{build}/artifact/{rel}"
-        out = dest / Path(rel).name
+        out = dest / rel
+        out.parent.mkdir(parents=True, exist_ok=True)
         resp = session.get(url)
         resp.raise_for_status()
         out.write_bytes(resp.content)
