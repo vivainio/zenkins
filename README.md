@@ -18,6 +18,9 @@ user = "your-username"
 token = "your-api-token"
 ```
 
+To create an API token: go to your Jenkins instance, click your name (top right) →
+Configure → API Token → Add new Token.
+
 Then verify with `zenkins init`.
 
 ## Usage
