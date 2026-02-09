@@ -7,6 +7,7 @@ from zenkins import __version__
 from zenkins.artifacts import artifacts_command
 from zenkins.build import build_command
 from zenkins.builds import builds_command
+from zenkins.failures import failures_command
 from zenkins.init import init_command
 from zenkins.jobs import jobs_command
 from zenkins.log import log_command
@@ -51,6 +52,11 @@ def main() -> None:
     # queue
     subparsers.add_parser("queue", help="Show build queue")
 
+    # failures
+    failures_parser = subparsers.add_parser("failures", help="Show failing tests for a build")
+    failures_parser.add_argument("job", help="Job name")
+    failures_parser.add_argument("build", nargs="?", help="Build number (default: last build)")
+
     # artifacts
     artifacts_parser = subparsers.add_parser("artifacts", help="List or download build artifacts")
     artifacts_parser.add_argument("job", help="Job name")
@@ -71,6 +77,7 @@ def main() -> None:
 
     commands = {
         "artifacts": artifacts_command,
+        "failures": failures_command,
         "init": init_command,
         "jobs": jobs_command,
         "status": status_command,
