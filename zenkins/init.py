@@ -3,14 +3,14 @@
 import argparse
 import sys
 
-from zenkins.client import CONFIG_FILE, _LEGACY_CONFIG, load_credentials, api_get
+from zenkins.client import CONFIG_FILE, load_credentials, api_get
 
 
 def init_command(args: argparse.Namespace) -> None:
     """Verify Jenkins credentials and connectivity."""
     print(f"Config file: {CONFIG_FILE}")
 
-    if not CONFIG_FILE.exists() and not _LEGACY_CONFIG.exists():
+    if not CONFIG_FILE.exists():
         print(f"\nError: Config file not found at {CONFIG_FILE}", file=sys.stderr)
         print("Create it with:", file=sys.stderr)
         print('  url = "http://your-jenkins.example.com"', file=sys.stderr)

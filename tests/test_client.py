@@ -7,12 +7,12 @@ from zenkins.client import load_credentials, api_get, api_post
 
 
 def test_load_credentials(tmp_path):
-    """Test loading KEY=VALUE config file."""
-    config = tmp_path / "config"
+    """Test loading TOML config file."""
+    config = tmp_path / "config.toml"
     config.write_text(
-        "JENKINS_URL=http://jenkins.example.com\n"
-        "JENKINS_USER=testuser\n"
-        "JENKINS_TOKEN=abc123\n"
+        'url = "http://jenkins.example.com"\n'
+        'user = "testuser"\n'
+        'token = "abc123"\n'
     )
 
     with patch("zenkins.client.CONFIG_FILE", config):
@@ -25,7 +25,7 @@ def test_load_credentials(tmp_path):
 
 def test_load_credentials_missing_file(tmp_path):
     """Test loading from nonexistent file returns empty dict."""
-    config = tmp_path / "nonexistent"
+    config = tmp_path / "config.toml"
 
     with patch("zenkins.client.CONFIG_FILE", config):
         creds = load_credentials()
@@ -33,15 +33,13 @@ def test_load_credentials_missing_file(tmp_path):
     assert creds == {}
 
 
-def test_load_credentials_comments_and_blanks(tmp_path):
-    """Test that comments and blank lines are ignored."""
-    config = tmp_path / "config"
+def test_load_credentials_partial(tmp_path):
+    """Test loading config with missing keys."""
+    config = tmp_path / "config.toml"
     config.write_text(
-        "# This is a comment\n"
-        "\n"
-        "JENKINS_URL=http://jenkins.example.com\n"
-        "  \n"
-        "JENKINS_USER=testuser\n"
+        '# Jenkins config\n'
+        'url = "http://jenkins.example.com"\n'
+        'user = "testuser"\n'
     )
 
     with patch("zenkins.client.CONFIG_FILE", config):
@@ -49,7 +47,7 @@ def test_load_credentials_comments_and_blanks(tmp_path):
 
     assert creds["url"] == "http://jenkins.example.com"
     assert creds["user"] == "testuser"
-    assert "token" not in creds
+    assert creds["token"] == ""
 
 
 def test_api_get(mock_session):
