@@ -33,15 +33,29 @@ def _get_failures(job: str, build: str) -> list[str]:
     return failures
 
 
-def _parse_build_range(build_spec: str) -> tuple[int, int] | None:
-    """Parse 'N..M' into (N, M) or return None."""
-    if ".." not in build_spec:
-        return None
-    parts = build_spec.split("..", 1)
-    try:
-        return int(parts[0]), int(parts[1])
-    except ValueError:
-        return None
+def _get_last_n_build_numbers(job: str, n: int) -> list[int]:
+    """Get the last N build numbers for a job."""
+    tree = f"builds[number]{{{0},{n}}}"
+    resp = api_get(f"{job_path(job)}/api/json?tree={tree}")
+    data = resp.json()
+    return [b["number"] for b in data.get("builds", [])]
+
+
+def _parse_build_spec(build_spec: str) -> str | list[int] | None:
+    """Parse build spec: 'N..M' for range, '~N' for last N, or plain build."""
+    if ".." in build_spec:
+        parts = build_spec.split("..", 1)
+        try:
+            start, end = int(parts[0]), int(parts[1])
+            return list(range(start, end + 1))
+        except ValueError:
+            return None
+    if build_spec.startswith("~"):
+        try:
+            return int(build_spec[1:])
+        except ValueError:
+            return None
+    return build_spec
 
 
 def _single_build(job: str, build: str) -> None:
@@ -94,9 +108,8 @@ def _single_build(job: str, build: str) -> None:
         print("No test results found for this build.")
 
 
-def _range_builds(job: str, start: int, end: int) -> None:
-    """Show failure summary across a range of builds."""
-    builds = list(range(start, end + 1))
+def _multi_builds(job: str, builds: list[int]) -> None:
+    """Show failure summary across multiple builds."""
     total = len(builds)
     counts: Counter[str] = Counter()
     build_failures: dict[str, list[int]] = {}
@@ -108,7 +121,7 @@ def _range_builds(job: str, start: int, end: int) -> None:
             counts[f] += 1
             build_failures.setdefault(f, []).append(b)
 
-    print(f"\r{total} builds, #{start}-#{end}                    \n")
+    print(f"\r{total} builds, #{min(builds)}-#{max(builds)}                    \n")
 
     if not counts:
         print("No test failures found.")
@@ -143,8 +156,14 @@ def failures_command(args: argparse.Namespace) -> None:
     job = args.job
     build = args.build or "lastBuild"
 
-    rng = _parse_build_range(build)
-    if rng:
-        _range_builds(job, rng[0], rng[1])
+    spec = _parse_build_spec(build)
+    if isinstance(spec, list):
+        _multi_builds(job, spec)
+    elif isinstance(spec, int):
+        builds = _get_last_n_build_numbers(job, spec)
+        if not builds:
+            print("No builds found.")
+            return
+        _multi_builds(job, sorted(builds))
     else:
         _single_build(job, build)
