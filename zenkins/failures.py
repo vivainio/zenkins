@@ -41,21 +41,16 @@ def _get_last_n_build_numbers(job: str, n: int) -> list[int]:
     return [b["number"] for b in data.get("builds", [])]
 
 
-def _parse_build_spec(build_spec: str) -> str | list[int] | None:
-    """Parse build spec: 'N..M' for range, '~N' for last N, or plain build."""
-    if ".." in build_spec:
-        parts = build_spec.split("..", 1)
-        try:
-            start, end = int(parts[0]), int(parts[1])
-            return list(range(start, end + 1))
-        except ValueError:
-            return None
-    if build_spec.startswith("~"):
-        try:
-            return int(build_spec[1:])
-        except ValueError:
-            return None
-    return build_spec
+def _parse_build_range(build_spec: str) -> list[int] | None:
+    """Parse 'N..M' into a list of build numbers, or return None."""
+    if ".." not in build_spec:
+        return None
+    parts = build_spec.split("..", 1)
+    try:
+        start, end = int(parts[0]), int(parts[1])
+        return list(range(start, end + 1))
+    except ValueError:
+        return None
 
 
 def _single_build(job: str, build: str) -> None:
@@ -151,19 +146,24 @@ def _multi_builds(job: str, builds: list[int]) -> None:
         print()
 
 
+def _resolve_builds(job: str, build: str | None, n: int | None) -> list[str] | None:
+    """Resolve build spec + optional -n into a list of builds, or None for single."""
+    if n:
+        numbers = _get_last_n_build_numbers(job, n)
+        return [str(b) for b in sorted(numbers)] if numbers else None
+    if build:
+        rng = _parse_build_range(build)
+        if rng:
+            return [str(b) for b in rng]
+    return None
+
+
 def failures_command(args: argparse.Namespace) -> None:
     """Show failing tests for a build or range of builds."""
     job = args.job
-    build = args.build or "lastBuild"
 
-    spec = _parse_build_spec(build)
-    if isinstance(spec, list):
-        _multi_builds(job, spec)
-    elif isinstance(spec, int):
-        builds = _get_last_n_build_numbers(job, spec)
-        if not builds:
-            print("No builds found.")
-            return
-        _multi_builds(job, sorted(builds))
+    builds = _resolve_builds(job, args.build, args.n)
+    if builds:
+        _multi_builds(job, [int(b) for b in builds])
     else:
-        _single_build(job, build)
+        _single_build(job, args.build or "lastBuild")

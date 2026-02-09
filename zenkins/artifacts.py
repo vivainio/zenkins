@@ -5,7 +5,7 @@ from fnmatch import fnmatch
 from pathlib import Path
 
 from zenkins.client import api_get, get_base_url, get_session, job_path
-from zenkins.failures import _parse_build_spec, _get_last_n_build_numbers
+from zenkins.failures import _resolve_builds
 
 
 def _get_artifacts(job: str, build: str, pattern: str | None) -> list[str]:
@@ -37,26 +37,15 @@ def _download_artifacts(
     return len(artifacts)
 
 
-def _resolve_builds(job: str, build_spec: str) -> list[str]:
-    """Resolve a build spec to a list of build strings."""
-    spec = _parse_build_spec(build_spec)
-    if isinstance(spec, list):
-        return [str(b) for b in spec]
-    elif isinstance(spec, int):
-        return [str(b) for b in sorted(_get_last_n_build_numbers(job, spec))]
-    else:
-        return [spec]
-
-
 def artifacts_command(args: argparse.Namespace) -> None:
     """List or download artifacts for one or more builds."""
     job = args.job
-    build_spec = args.build or "lastBuild"
     dest = Path(args.dir)
     pattern = args.glob
 
-    builds = _resolve_builds(job, build_spec)
-    multi = len(builds) > 1
+    multi_builds = _resolve_builds(job, args.build, args.n)
+    builds = multi_builds if multi_builds else [args.build or "lastBuild"]
+    multi = multi_builds is not None
 
     total = 0
     for build in builds:

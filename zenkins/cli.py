@@ -55,12 +55,14 @@ def main() -> None:
     # failures
     failures_parser = subparsers.add_parser("failures", help="Show failing tests for a build")
     failures_parser.add_argument("job", help="Job name")
-    failures_parser.add_argument("build", nargs="?", help="Build number (default: last build)")
+    failures_parser.add_argument("build", nargs="?", help="Build number or range (e.g. 42, 40..45)")
+    failures_parser.add_argument("-n", type=int, help="Summarize last N builds")
 
     # artifacts
     artifacts_parser = subparsers.add_parser("artifacts", help="List or download build artifacts")
     artifacts_parser.add_argument("job", help="Job name")
-    artifacts_parser.add_argument("build", nargs="?", help="Build number (default: last build)")
+    artifacts_parser.add_argument("build", nargs="?", help="Build number or range (e.g. 42, 40..45)")
+    artifacts_parser.add_argument("-n", type=int, help="Fetch last N builds")
     artifacts_parser.add_argument("-d", "--dir", default=".", help="Download directory (default: .)")
     artifacts_parser.add_argument("--glob", help="Filter artifacts by glob pattern")
     artifacts_parser.add_argument("-l", "--list", action="store_true", help="List artifacts without downloading")
