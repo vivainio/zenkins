@@ -12,6 +12,11 @@ from zenkins.types import Credentials
 CONFIG_FILE = Path(platformdirs.user_config_dir("zenkins")) / "config"
 
 
+def job_path(job: str) -> str:
+    """Convert a job name like 'p2p/dev' to '/job/p2p/job/dev'."""
+    return "/job/" + "/job/".join(job.split("/"))
+
+
 def load_credentials() -> Credentials:
     """Load credentials from ~/.config/jenkins/config (KEY=VALUE format)."""
     if not CONFIG_FILE.exists():

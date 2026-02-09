@@ -4,6 +4,7 @@ import argparse
 import sys
 
 from zenkins import __version__
+from zenkins.artifacts import artifacts_command
 from zenkins.build import build_command
 from zenkins.builds import builds_command
 from zenkins.init import init_command
@@ -50,6 +51,14 @@ def main() -> None:
     # queue
     subparsers.add_parser("queue", help="Show build queue")
 
+    # artifacts
+    artifacts_parser = subparsers.add_parser("artifacts", help="List or download build artifacts")
+    artifacts_parser.add_argument("job", help="Job name")
+    artifacts_parser.add_argument("build", nargs="?", help="Build number (default: last build)")
+    artifacts_parser.add_argument("-d", "--dir", default=".", help="Download directory (default: .)")
+    artifacts_parser.add_argument("--glob", help="Filter artifacts by glob pattern")
+    artifacts_parser.add_argument("-l", "--list", action="store_true", help="List artifacts without downloading")
+
     # build
     build_parser = subparsers.add_parser("build", help="Trigger a build")
     build_parser.add_argument("job", help="Job name")
@@ -61,6 +70,7 @@ def main() -> None:
         sys.exit(1)
 
     commands = {
+        "artifacts": artifacts_command,
         "init": init_command,
         "jobs": jobs_command,
         "status": status_command,

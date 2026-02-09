@@ -2,7 +2,7 @@
 
 import argparse
 
-from zenkins.client import api_get
+from zenkins.client import api_get, job_path
 
 
 def log_command(args: argparse.Namespace) -> None:
@@ -10,5 +10,5 @@ def log_command(args: argparse.Namespace) -> None:
     job = args.job
     build = args.build or "lastBuild"
 
-    resp = api_get(f"/job/{job}/{build}/consoleText")
+    resp = api_get(f"{job_path(job)}/{build}/consoleText")
     print(resp.text)

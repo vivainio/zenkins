@@ -3,7 +3,7 @@
 import argparse
 from datetime import datetime, timezone
 
-from zenkins.client import api_get
+from zenkins.client import api_get, job_path
 
 GREEN = "\033[32m"
 RED = "\033[31m"
@@ -45,7 +45,7 @@ def status_command(args: argparse.Namespace) -> None:
     """Show status of the last build for a job."""
     job = args.job
     tree = "lastBuild[number,result,timestamp,duration,building,displayName,description]"
-    resp = api_get(f"/job/{job}/api/json?tree={tree}")
+    resp = api_get(f"{job_path(job)}/api/json?tree={tree}")
     data = resp.json()
 
     build = data.get("lastBuild")

@@ -3,7 +3,7 @@
 import argparse
 from datetime import datetime, timezone
 
-from zenkins.client import api_get
+from zenkins.client import api_get, job_path
 
 GREEN = "\033[32m"
 RED = "\033[31m"
@@ -39,7 +39,7 @@ def builds_command(args: argparse.Namespace) -> None:
     job = args.job
     n = args.n
     tree = f"builds[number,result,timestamp,duration,building]{{{0},{n}}}"
-    resp = api_get(f"/job/{job}/api/json?tree={tree}")
+    resp = api_get(f"{job_path(job)}/api/json?tree={tree}")
     data = resp.json()
 
     builds = data.get("builds", [])
