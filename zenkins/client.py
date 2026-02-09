@@ -1,6 +1,7 @@
 """Jenkins HTTP client - session management and credential loading."""
 
 import sys
+import tomllib
 from functools import lru_cache
 from pathlib import Path
 
@@ -9,7 +10,9 @@ import requests
 
 from zenkins.types import Credentials
 
-CONFIG_FILE = Path(platformdirs.user_config_dir("zenkins")) / "config"
+CONFIG_DIR = Path(platformdirs.user_config_dir("zenkins"))
+CONFIG_FILE = CONFIG_DIR / "config.toml"
+_LEGACY_CONFIG = CONFIG_DIR / "config"
 
 
 def job_path(job: str) -> str:
@@ -17,13 +20,10 @@ def job_path(job: str) -> str:
     return "/job/" + "/job/".join(job.split("/"))
 
 
-def load_credentials() -> Credentials:
-    """Load credentials from ~/.config/jenkins/config (KEY=VALUE format)."""
-    if not CONFIG_FILE.exists():
-        return {}
-
+def _load_legacy(path: Path) -> Credentials:
+    """Load old KEY=VALUE config format."""
     creds: Credentials = {}
-    for line in CONFIG_FILE.read_text().splitlines():
+    for line in path.read_text().splitlines():
         line = line.strip()
         if not line or line.startswith("#"):
             continue
@@ -39,6 +39,20 @@ def load_credentials() -> Credentials:
         elif key == "JENKINS_TOKEN":
             creds["token"] = value
     return creds
+
+
+def load_credentials() -> Credentials:
+    """Load credentials from config.toml, falling back to legacy config."""
+    if CONFIG_FILE.exists():
+        data = tomllib.loads(CONFIG_FILE.read_text())
+        return {
+            "url": data.get("url", ""),
+            "user": data.get("user", ""),
+            "token": data.get("token", ""),
+        }
+    if _LEGACY_CONFIG.exists():
+        return _load_legacy(_LEGACY_CONFIG)
+    return {}
 
 
 def get_credentials() -> tuple[str, str, str]:

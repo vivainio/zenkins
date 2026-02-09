@@ -10,7 +10,15 @@ uv tool install zenkins
 
 ## Setup
 
-Run `zenkins init` to configure your Jenkins connection. This creates `~/.config/zenkins/config` with your Jenkins URL and credentials.
+Create `~/.config/zenkins/config.toml`:
+
+```toml
+url = "http://jenkins.example.com"
+user = "your-username"
+token = "your-api-token"
+```
+
+Then verify with `zenkins init`.
 
 ## Usage
 
