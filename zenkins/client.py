@@ -14,8 +14,15 @@ CONFIG_FILE = Path(platformdirs.user_config_dir("zenkins")) / "config.toml"
 
 
 def job_path(job: str) -> str:
-    """Convert a job name like 'folder/name' to '/job/folder/job/name'."""
-    return "/job/" + "/job/".join(job.split("/"))
+    """Convert a job name like 'folder/name' to '/job/folder/job/name'.
+
+    Each segment is URL-encoded so that job names containing special
+    characters (e.g. ``features%2Fbranch-name`` from multibranch
+    pipelines) are double-encoded as Jenkins expects.
+    """
+    from urllib.parse import quote
+    parts = job.split("/")
+    return "/job/" + "/job/".join(quote(p, safe="") for p in parts)
 
 
 def load_credentials() -> Credentials:
