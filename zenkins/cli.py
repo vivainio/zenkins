@@ -11,6 +11,7 @@ from zenkins.failures import failures_command
 from zenkins.init import init_command
 from zenkins.jobs import jobs_command
 from zenkins.log import log_command
+from zenkins.params import params_command
 from zenkins.queue import queue_command
 from zenkins.status import status_command
 
@@ -68,9 +69,15 @@ def main() -> None:
     artifacts_parser.add_argument("--glob", help="Filter artifacts by glob pattern")
     artifacts_parser.add_argument("-l", "--list", action="store_true", help="List artifacts without downloading")
 
+    # params
+    params_parser = subparsers.add_parser("params", help="List build parameters for a job")
+    params_parser.add_argument("job", help="Job name")
+
     # build
     build_parser = subparsers.add_parser("build", help="Trigger a build")
     build_parser.add_argument("job", help="Job name")
+    build_parser.add_argument("-p", "--param", action="append", metavar="KEY=VALUE",
+                              help="Build parameter (repeatable, e.g. -p BRANCH=main -p CLEAN=true)")
 
     args = parser.parse_args()
 
@@ -88,6 +95,7 @@ def main() -> None:
         "log": log_command,
         "queue": queue_command,
         "build": build_command,
+        "params": params_command,
     }
 
     commands[args.command](args)
