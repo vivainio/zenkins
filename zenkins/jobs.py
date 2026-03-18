@@ -44,8 +44,15 @@ STATUS_MAP = {
 
 def jobs_command(args: argparse.Namespace) -> None:
     """List all jobs with their current status."""
+    from zenkins.client import job_path
+
     tree = "jobs[name,color,url]"
-    resp = api_get(f"/api/json?tree={tree}")
+    folder = getattr(args, "folder", None)
+    if folder:
+        base = job_path(folder)
+    else:
+        base = ""
+    resp = api_get(f"{base}/api/json?tree={tree}")
     data = resp.json()
     jobs = data.get("jobs", [])
 

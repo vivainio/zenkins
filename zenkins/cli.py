@@ -33,7 +33,8 @@ def main() -> None:
     subparsers.add_parser("init", help="Verify Jenkins configuration and connectivity")
 
     # jobs
-    subparsers.add_parser("jobs", help="List all jobs with status")
+    jobs_parser = subparsers.add_parser("jobs", help="List all jobs with status")
+    jobs_parser.add_argument("folder", nargs="?", help="Folder path (e.g. my-project)")
 
     # status
     status_parser = subparsers.add_parser("status", help="Show last build info for a job")
