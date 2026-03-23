@@ -18,10 +18,9 @@ def build_command(args: argparse.Namespace) -> None:
             raise SystemExit(f"Invalid parameter format: {item!r} (expected KEY=VALUE)")
         params[key] = value
 
+    api_post(f"{job_path(job)}/buildWithParameters", params=params)
     if params:
-        api_post(f"{job_path(job)}/buildWithParameters", params=params)
         param_str = ", ".join(f"{k}={v}" for k, v in params.items())
         print(f"{GREEN}Build triggered:{RESET} {job}  [{param_str}]")
     else:
-        api_post(f"{job_path(job)}/build")
         print(f"{GREEN}Build triggered:{RESET} {job}")
