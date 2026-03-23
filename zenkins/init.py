@@ -11,12 +11,15 @@ def init_command(args: argparse.Namespace) -> None:
     print(f"Config file: {CONFIG_FILE}")
 
     if not CONFIG_FILE.exists():
-        print(f"\nError: Config file not found at {CONFIG_FILE}", file=sys.stderr)
-        print("Create it with:", file=sys.stderr)
-        print('  url = "http://your-jenkins.example.com"', file=sys.stderr)
-        print('  user = "your-username"', file=sys.stderr)
-        print('  token = "your-api-token"', file=sys.stderr)
-        sys.exit(1)
+        CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        CONFIG_FILE.write_text(
+            'url = "http://your-jenkins.example.com"\n'
+            'user = "your-username"\n'
+            'token = "your-api-token"\n'
+        )
+        print(f"Created config file with defaults — edit it and run init again.")
+        print("To create an API token: Jenkins → Your name (top right) → Configure → API Token → Add new Token")
+        sys.exit(0)
 
     creds = load_credentials()
     url = creds.get("url", "")

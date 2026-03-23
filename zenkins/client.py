@@ -10,7 +10,7 @@ import requests
 
 from zenkins.types import Credentials
 
-CONFIG_FILE = Path(platformdirs.user_config_dir("zenkins")) / "config.toml"
+CONFIG_FILE = Path(platformdirs.user_config_dir("zenkins", appauthor=False)) / "config.toml"
 
 
 def job_path(job: str) -> str:
