@@ -10,18 +10,34 @@ uv tool install zenkins
 
 ## Setup
 
-Create `~/.config/zenkins/config.toml`:
+Run `zenkins init` to get started. If no config file exists, it creates one with
+placeholder values:
 
 ```toml
-url = "http://jenkins.example.com"
+url = "http://your-jenkins.example.com"
 user = "your-username"
 token = "your-api-token"
 ```
 
-To create an API token: go to your Jenkins instance, click your name (top right) →
-Configure → API Token → Add new Token.
+The config file location depends on your OS:
 
-Then verify with `zenkins init`.
+| OS      | Path                                          |
+|---------|-----------------------------------------------|
+| Linux   | `~/.config/zenkins/config.toml`               |
+| macOS   | `~/Library/Application Support/zenkins/config.toml` |
+| Windows | `%APPDATA%\zenkins\config.toml`               |
+
+Edit the file with your Jenkins URL, username, and API token, then run
+`zenkins init` again to verify connectivity.
+
+### Creating an API token
+
+1. Log in to your Jenkins instance
+2. Click your username (top right) → **Configure**
+3. Scroll to **API Token** → **Add new Token**
+4. Give it a name, click **Generate**, and copy the token
+
+The token is shown only once — paste it into `config.toml` right away.
 
 ## Usage
 
