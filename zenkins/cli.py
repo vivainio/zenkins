@@ -7,6 +7,7 @@ from zenkins import __version__
 from zenkins.artifacts import artifacts_command
 from zenkins.build import build_command
 from zenkins.builds import builds_command
+from zenkins.client import set_profile
 from zenkins.failures import failures_command
 from zenkins.init import init_command
 from zenkins.jobs import jobs_command
@@ -27,6 +28,11 @@ def main() -> None:
         action="version",
         version=f"%(prog)s {__version__}",
     )
+    parser.add_argument(
+        "--profile",
+        metavar="NAME",
+        help="Config profile to use (defined as [profile.NAME] in config.toml)",
+    )
 
     subparsers = parser.add_subparsers(dest="command", help="Commands")
 
@@ -40,6 +46,8 @@ def main() -> None:
     # status
     status_parser = subparsers.add_parser("status", help="Show last build info for a job")
     status_parser.add_argument("job", help="Job name")
+    status_parser.add_argument("-w", "--wait", action="store_true",
+                               help="Poll until the build finishes")
 
     # builds
     builds_parser = subparsers.add_parser("builds", help="List recent builds for a job")
@@ -84,6 +92,8 @@ def main() -> None:
     if not args.command:
         parser.print_help()
         sys.exit(1)
+
+    set_profile(args.profile)
 
     commands = {
         "artifacts": artifacts_command,

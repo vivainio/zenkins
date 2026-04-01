@@ -1,6 +1,8 @@
 """zenkins status <job> - last build info."""
 
 import argparse
+import sys
+import time
 from datetime import datetime, timezone
 
 from zenkins.client import api_get, job_path
@@ -19,6 +21,8 @@ RESULT_COLORS = {
     "ABORTED": GRAY,
     None: YELLOW,
 }
+
+POLL_INTERVAL = 10
 
 
 def format_duration(ms: int) -> str:
@@ -41,18 +45,13 @@ def format_timestamp(ts: int) -> str:
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def status_command(args: argparse.Namespace) -> None:
-    """Show status of the last build for a job."""
-    job = args.job
+def fetch_last_build(job: str) -> dict | None:
     tree = "lastBuild[number,result,timestamp,duration,building,displayName,description]"
     resp = api_get(f"{job_path(job)}/api/json?tree={tree}")
-    data = resp.json()
+    return resp.json().get("lastBuild")
 
-    build = data.get("lastBuild")
-    if not build:
-        print(f"No builds found for {job}")
-        return
 
+def print_status(job: str, build: dict) -> None:
     result = build.get("result")
     building = build.get("building", False)
     color = RESULT_COLORS.get(result, GRAY)
@@ -71,3 +70,35 @@ def status_command(args: argparse.Namespace) -> None:
 
     if build.get("description"):
         print(f"  Desc:     {build['description']}")
+
+
+def status_command(args: argparse.Namespace) -> None:
+    """Show status of the last build for a job."""
+    job = args.job
+    wait = getattr(args, "wait", False)
+
+    build = fetch_last_build(job)
+    if not build:
+        print(f"No builds found for {job}")
+        return
+
+    if not wait or not build.get("building", False):
+        print_status(job, build)
+        return
+
+    # Poll until finished
+    try:
+        while build.get("building", False):
+            elapsed = format_duration(build["duration"])
+            print(f"\r\033[K  {YELLOW}BUILDING{RESET}  #{build['number']}  {elapsed}", end="", flush=True)
+            time.sleep(POLL_INTERVAL)
+            build = fetch_last_build(job)
+            if not build:
+                print(f"\nBuild disappeared for {job}")
+                return
+    except KeyboardInterrupt:
+        print()
+        sys.exit(130)
+
+    print("\r\033[K", end="")
+    print_status(job, build)

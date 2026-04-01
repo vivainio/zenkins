@@ -25,15 +25,36 @@ def job_path(job: str) -> str:
     return "/job/" + "/job/".join(quote(p, safe="") for p in parts)
 
 
-def load_credentials() -> Credentials:
-    """Load credentials from config.toml."""
+_active_profile: str | None = None
+
+
+def set_profile(profile: str | None) -> None:
+    """Set the active profile name."""
+    global _active_profile
+    _active_profile = profile
+
+
+def load_credentials(profile: str | None = None) -> Credentials:
+    """Load credentials from config.toml, optionally from a named profile.
+
+    Named profiles are stored as ``[profile.NAME]`` sections in config.toml.
+    If *profile* is None the top-level keys are used (default profile).
+    """
     if not CONFIG_FILE.exists():
         return {}
     data = tomllib.loads(CONFIG_FILE.read_text())
+    if profile:
+        section = data.get("profile", {}).get(profile)
+        if section is None:
+            print(f"Error: profile '{profile}' not found in {CONFIG_FILE}", file=sys.stderr)
+            sys.exit(1)
+        src = section
+    else:
+        src = data
     return {
-        "url": data.get("url", ""),
-        "user": data.get("user", ""),
-        "token": data.get("token", ""),
+        "url": src.get("url", ""),
+        "user": src.get("user", ""),
+        "token": src.get("token", ""),
     }
 
 
@@ -43,7 +64,7 @@ def get_credentials() -> tuple[str, str, str]:
     Returns:
         Tuple of (url, user, token)
     """
-    creds = load_credentials()
+    creds = load_credentials(_active_profile)
     url = creds.get("url")
     user = creds.get("user")
     token = creds.get("token")
