@@ -39,3 +39,6 @@ package = true
 
 [tool.setuptools]
 packages = ["zenkins"]
+
+[tool.setuptools.package-data]
+zenkins = ["skills/zenkins/*"]

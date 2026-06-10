@@ -14,6 +14,7 @@ from zenkins.jobs import jobs_command
 from zenkins.log import log_command
 from zenkins.params import params_command
 from zenkins.queue import queue_command
+from zenkins.skills import install_skills_command
 from zenkins.status import status_command
 
 
@@ -87,6 +88,15 @@ def main() -> None:
     build_parser.add_argument("-p", "--param", action="append", metavar="KEY=VALUE",
                               help="Build parameter (repeatable, e.g. -p BRANCH=main -p CLEAN=true)")
 
+    install_skills_parser = subparsers.add_parser(
+        "install-skills",
+        help="Install Claude Code skills to ~/.claude/skills/",
+    )
+    install_skills_parser.add_argument(
+        "--skills-dir",
+        help="Target directory for skills (default: ~/.claude/skills/)",
+    )
+
     args = parser.parse_args()
 
     if not args.command:
@@ -106,6 +116,7 @@ def main() -> None:
         "queue": queue_command,
         "build": build_command,
         "params": params_command,
+        "install-skills": install_skills_command,
     }
 
     commands[args.command](args)
