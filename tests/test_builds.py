@@ -64,15 +64,13 @@ def test_status_command(mock_session, capsys):
     """Test status display."""
     mock_resp = MagicMock()
     mock_resp.json.return_value = {
-        "lastBuild": {
-            "number": 99,
-            "result": "SUCCESS",
-            "timestamp": 1700000000000,
-            "duration": 120000,
-            "building": False,
-            "displayName": "#99",
-            "description": None,
-        }
+        "number": 99,
+        "result": "SUCCESS",
+        "timestamp": 1700000000000,
+        "duration": 120000,
+        "building": False,
+        "displayName": "#99",
+        "description": None,
     }
     mock_session.get.return_value = mock_resp
 
