@@ -45,10 +45,11 @@ def format_timestamp(ts: int) -> str:
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def fetch_last_build(job: str) -> dict | None:
-    tree = "lastBuild[number,result,timestamp,duration,building,displayName,description]"
-    resp = api_get(f"{job_path(job)}/api/json?tree={tree}")
-    return resp.json().get("lastBuild")
+def fetch_build(job: str, build: str = "lastBuild") -> dict | None:
+    tree = "number,result,timestamp,duration,building,displayName,description"
+    resp = api_get(f"{job_path(job)}/{build}/api/json?tree={tree}")
+    data = resp.json()
+    return data if data else None
 
 
 def print_status(job: str, build: dict) -> None:
@@ -73,11 +74,12 @@ def print_status(job: str, build: dict) -> None:
 
 
 def status_command(args: argparse.Namespace) -> None:
-    """Show status of the last build for a job."""
+    """Show status of a build for a job (last build by default)."""
     job = args.job
+    build_id = getattr(args, "build", None) or "lastBuild"
     wait = getattr(args, "wait", False)
 
-    build = fetch_last_build(job)
+    build = fetch_build(job, build_id)
     if not build:
         print(f"No builds found for {job}")
         return
@@ -92,7 +94,7 @@ def status_command(args: argparse.Namespace) -> None:
             elapsed = format_duration(build["duration"])
             print(f"\r\033[K  {YELLOW}BUILDING{RESET}  #{build['number']}  {elapsed}", end="", flush=True)
             time.sleep(POLL_INTERVAL)
-            build = fetch_last_build(job)
+            build = fetch_build(job, build_id)
             if not build:
                 print(f"\nBuild disappeared for {job}")
                 return

@@ -47,6 +47,7 @@ def main() -> None:
     # status
     status_parser = subparsers.add_parser("status", help="Show last build info for a job")
     status_parser.add_argument("job", help="Job name")
+    status_parser.add_argument("build", nargs="?", help="Build number (default: last build)")
     status_parser.add_argument("-w", "--wait", action="store_true",
                                help="Poll until the build finishes")
 

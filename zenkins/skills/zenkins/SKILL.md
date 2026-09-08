@@ -15,9 +15,11 @@ zenkins jobs                 # top-level jobs
 zenkins jobs <folder>        # jobs inside a folder
 ```
 
-### Last build status for a job
+### Build status for a job
 ```bash
-zenkins status <job>
+zenkins status <job>          # last build
+zenkins status <job> 142      # specific build
+zenkins status <job> -w       # poll until the (last) build finishes
 ```
 
 ### Recent builds
